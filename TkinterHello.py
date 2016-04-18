@@ -1,52 +1,68 @@
 from tkinter import *  # Importing the Tkinter (tool box) library
 
+CELL_SIZE = 16
 
-class Game:
-    def __init__(self):
-        self.master = Tk()
+WIDTH = 30
+HEIGHT = 20
 
-        self.CELL_SIZE = 16
-        self.WIDTH = self.CELL_SIZE * 60
-        self.HEIGHT = self.CELL_SIZE * 30
-        self.userX = 15
-        self.userY = 15
-        self.w = Canvas(self.master, width=self.WIDTH, height=self.HEIGHT)
+userX = 5
+userY = 0
 
-    def on_click(self, event):
-        x = event.x
-        y = event.y
-        print("mouse click: " + str(x) + " " + str(y))
-        self.w.create_rectangle(x, y, x + 10, y + 10, fill="#689F38")
+master = Tk()
+master.wm_title("Копатель офлаен")
 
-    def on_key_press(self, key):
-        print("key " + key.char)
-
-    def draw(self):
-        self.i = 10
-        self.w.delete("all")
-        x = self.userX * self.CELL_SIZE
-        y = self.userY * self.CELL_SIZE
-        self.w.create_rectangle(x, y, x + self.CELL_SIZE, y + self.CELL_SIZE, fill="#689F38")
-
-    def update(self):
-        self.userX = self.userX + 1
-
-    def doLoop(self):
-        self.update()
-        self.draw()
-        self.master.after(int(1000 / 15), self.doLoop)
-
-    def go(self):
-        self.master.wm_title("Копатель офлаен")
-
-        self.w.pack()
-
-        self.w.bind_all("<Key>", self.on_key_press)
-        self.w.bind("<Button-1>", self.on_click)
-
-        self.doLoop()
-        self.master.mainloop()
+canvas = Canvas(master, width=WIDTH * CELL_SIZE, height=HEIGHT * CELL_SIZE)
+canvas.pack()
 
 
-game = Game()
-game.go()
+def on_click(event):
+    x = event.x
+    y = event.y
+    print("mouse click: " + str(x) + " " + str(y))
+    canvas.create_rectangle(x, y, x + 10, y + 10, fill="#689F38")
+
+
+last_key = None
+
+
+def on_key_press(key):
+    global last_key
+    last_key = key.char
+
+
+canvas.bind_all("<Key>", on_key_press)
+canvas.bind("<Button-1>", on_click)
+
+
+def draw():
+    canvas.delete("all")
+    x = userX * CELL_SIZE
+    y = userY * CELL_SIZE
+    canvas.create_rectangle(x, y, x + CELL_SIZE, y + CELL_SIZE, fill="#689F38")
+
+
+def direction_is(dir):
+    return last_key is not None and last_key.lower() == dir.lower()
+
+
+def update():
+    global userX, userY, last_key
+    if direction_is('s'):
+        userY += 1
+    elif direction_is('d'):
+        userX += 1
+    elif direction_is('a'):
+        userX -= 1
+    elif direction_is('w'):
+        userY -= 1
+    last_key = None
+
+
+def do_loop():
+    update()
+    draw()
+    master.after(int(1000 / 15), do_loop)
+
+
+do_loop()
+master.mainloop()
