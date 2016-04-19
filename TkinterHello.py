@@ -48,14 +48,22 @@ def last_key_is(dir):
 
 def update():
     global userX, userY, last_key
+    x = userX
+    y = userY
     if last_key_is('s'):
-        userY += 1
+        y += 1
     elif last_key_is('d'):
-        userX += 1
+        x += 1
     elif last_key_is('a'):
-        userX -= 1
+        x -= 1
     elif last_key_is('w'):
-        userY -= 1
+        y -= 1
+
+    # if x >= 0 and x < WIDTH and y >= 0 and y < HEIGHT:
+    if 0 <= x < WIDTH and 0 <= y < HEIGHT:
+        userX = x
+        userY = y
+
     last_key = None
 
 
@@ -66,7 +74,7 @@ def do_loop():
 
 
 def play_sound_track():
-    PlaySound('crest.wav', SND_FILENAME)
+    PlaySound('cr1est.wav', SND_FILENAME)
 
 
 thread = threading.Thread(target=play_sound_track)
