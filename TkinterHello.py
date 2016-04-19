@@ -1,4 +1,6 @@
+import threading
 from tkinter import *  # Importing the Tkinter (tool box) library
+from winsound import *
 
 CELL_SIZE = 16
 
@@ -6,12 +8,12 @@ WIDTH = 30
 HEIGHT = 20
 
 userX = 5
-userY = 0
+userY = 1
 
-master = Tk()
-master.wm_title("Копатель офлаен")
+window = Tk()
+window.wm_title("Копатель офлаен")
 
-canvas = Canvas(master, width=WIDTH * CELL_SIZE, height=HEIGHT * CELL_SIZE)
+canvas = Canvas(window, width=WIDTH * CELL_SIZE, height=HEIGHT * CELL_SIZE)
 canvas.pack()
 
 
@@ -19,7 +21,6 @@ def on_click(event):
     x = event.x
     y = event.y
     print("mouse click: " + str(x) + " " + str(y))
-    canvas.create_rectangle(x, y, x + 10, y + 10, fill="#689F38")
 
 
 last_key = None
@@ -38,22 +39,22 @@ def draw():
     canvas.delete("all")
     x = userX * CELL_SIZE
     y = userY * CELL_SIZE
-    canvas.create_rectangle(x, y, x + CELL_SIZE, y + CELL_SIZE, fill="#689F38")
+    canvas.create_rectangle(x, y, x + CELL_SIZE, y + CELL_SIZE, fill="#689F38", width=1)
 
 
-def direction_is(dir):
+def last_key_is(dir):
     return last_key is not None and last_key.lower() == dir.lower()
 
 
 def update():
     global userX, userY, last_key
-    if direction_is('s'):
+    if last_key_is('s'):
         userY += 1
-    elif direction_is('d'):
+    elif last_key_is('d'):
         userX += 1
-    elif direction_is('a'):
+    elif last_key_is('a'):
         userX -= 1
-    elif direction_is('w'):
+    elif last_key_is('w'):
         userY -= 1
     last_key = None
 
@@ -61,8 +62,16 @@ def update():
 def do_loop():
     update()
     draw()
-    master.after(int(1000 / 15), do_loop)
+    window.after(int(1000 / 15), do_loop)
 
+
+def play_sound_track():
+    PlaySound('crest.wav', SND_FILENAME)
+
+
+thread = threading.Thread(target=play_sound_track)
+thread.daemon = True
+thread.start()
 
 do_loop()
-master.mainloop()
+window.mainloop()
