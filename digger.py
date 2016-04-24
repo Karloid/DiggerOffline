@@ -1,5 +1,7 @@
 import threading
 from tkinter import *  # Importing the Tkinter (tool box) library
+from random import randint
+
 from terrain import *
 
 PLAYER_COLOR = "#689F38"
@@ -8,7 +10,7 @@ itIsWin = False  # TODO detect
 if itIsWin:
     from winsound import *
 
-CELL_SIZE = 16
+CELL_SIZE = 32
 
 WIDTH = 30
 HEIGHT = 20
@@ -32,6 +34,11 @@ def init_terrain():
         for y in range(userY + 7, HEIGHT):
             terrain[x][y] = Diorite()
 
+        for y in range(userY + 2, userY + 3):
+            if randint(0, 9) > 8:
+                terrain[x][y] = Tree()
+
+
 init_terrain()
 
 window = Tk()
@@ -47,15 +54,22 @@ def on_click(event):
     print("mouse click: " + str(x) + " " + str(y))
 
 
-last_key = None
+pressed_keys = set()
 
 
 def on_key_press(key):
-    global last_key
-    last_key = key.char
+    global pressed_keys
+    pressed_keys.add(key.char)
 
 
-canvas.bind_all("<Key>", on_key_press)
+def on_key_release(key):
+    global pressed_keys
+    pressed_keys.discard(key.char)
+
+
+canvas.bind_all("<KeyPress>", on_key_press)
+canvas.bind_all("<KeyRelease>", on_key_release)
+# canvas.bind("<KeyRelease>", on_key_release)
 canvas.bind("<Button-1>", on_click)
 
 
@@ -74,29 +88,39 @@ def draw():
     draw_rect_at(userX, userY, PLAYER_COLOR, 1)
 
 
-def last_key_is(dir):
-    return last_key is not None and last_key.lower() == dir.lower()
+def is_pressed(dir):
+    return dir in pressed_keys
 
 
 def update():
-    global userX, userY, last_key, currentTick
+    global userX, userY, pressed_keys, currentTick
+
+    def move(x, y):
+        global userX, userY
+        if 0 <= x < WIDTH and 0 <= y < HEIGHT and terrain[x][y].isAccessible():
+            userX = x
+            userY = y
+            return True
+        return False
+
+    solid_under_foot = not move(userX, userY + 1)  # gravity
+
     x = userX
     y = userY
-    if last_key_is('s'):
-        y += 1
-    elif last_key_is('d'):
-        x += 1
-    elif last_key_is('a'):
-        x -= 1
-    elif last_key_is('w'):
+
+    if is_pressed('w') and solid_under_foot:
         y -= 1
+        move(x, y)
+    if is_pressed('s'):
+        y += 1
+        move(x, y)
+    if is_pressed('a'):
+        x -= 1
+    if is_pressed('d'):
+        x += 1
 
-    # if x >= 0 and x < WIDTH and y >= 0 and y < HEIGHT:
-    if 0 <= x < WIDTH and 0 <= y < HEIGHT and terrain[x][y].isAccessible():
-        userX = x
-        userY = y
+    move(x, y)
 
-    last_key = None
     currentTick += 1
 
 
