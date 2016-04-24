@@ -2,7 +2,7 @@ import threading
 from tkinter import *  # Importing the Tkinter (tool box) library
 from random import randint
 
-from terrain_2 import *
+from rocks import *
 
 PLAYER_COLOR = "#689F38"
 
